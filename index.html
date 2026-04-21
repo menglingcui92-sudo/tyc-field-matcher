@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>天眼查线索字段匹配工具</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif; background: #f5f5f0; color: #1a1a1a; font-size: 14px; }
+.container { max-width: 960px; margin: 0 auto; padding: 2rem 1.5rem; }
+.header { margin-bottom: 2rem; }
+.header h1 { font-size: 20px; font-weight: 500; color: #1a1a1a; }
+.header p { font-size: 13px; color: #888; margin-top: 4px; }
+.card { background: #fff; border-radius: 12px; border: 0.5px solid #e5e5e0; padding: 1.5rem; margin-bottom: 1rem; }
+.section-label { font-size: 11px; font-weight: 500; color: #888; letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 8px; }
+.input-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+input[type=text], input[type=date] { width: 100%; padding: 9px 12px; font-size: 13px; border: 0.5px solid #ddd; border-radius: 8px; background: #fff; color: #1a1a1a; font-family: inherit; }
+input:focus { outline: none; border-color: #999; }
+textarea { width: 100%; min-height: 120px; padding: 12px; font-size: 13px; border: 0.5px solid #ddd; border-radius: 8px; background: #fff; color: #1a1a1a; resize: vertical; font-family: inherit; line-height: 1.6; }
+textarea:focus { outline: none; border-color: #999; }
+.btn-row { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+button { padding: 8px 18px; font-size: 13px; font-weight: 500; border-radius: 8px; border: 0.5px solid #ddd; background: #fff; color: #1a1a1a; cursor: pointer; font-family: inherit; transition: background 0.15s; }
+button:hover { background: #f5f5f0; }
+button.primary { background: #1a1a1a; color: #fff; border-color: #1a1a1a; }
+button.primary:hover { background: #333; }
+button:disabled { opacity: 0.4; cursor: not-allowed; }
+.stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 1.5rem; }
+.stat-card { background: #f5f5f0; border-radius: 8px; padding: 12px; }
+.stat-card .num { font-size: 24px; font-weight: 500; }
+.stat-card .lbl { font-size: 12px; color: #888; margin-top: 2px; }
+.table-wrap { border: 0.5px solid #e5e5e0; border-radius: 10px; overflow: hidden; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; table-layout: fixed; }
+th { background: #f9f9f7; font-weight: 500; font-size: 11px; color: #888; padding: 9px 12px; text-align: left; border-bottom: 0.5px solid #e5e5e0; white-space: nowrap; }
+td { padding: 9px 12px; border-bottom: 0.5px solid #f0f0ec; color: #1a1a1a; vertical-align: middle; }
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: #fafaf8; }
+select { padding: 4px 6px; font-size: 12px; border: 0.5px solid #ddd; border-radius: 6px; background: #fff; color: #1a1a1a; font-family: inherit; }
+.pill { display: inline-block; padding: 2px 10px; border-radius: 20px; font-size: 11px; font-weight: 500; }
+.pill-win { background: #e8f5e9; color: #2e7d32; }
+.pill-tie { background: #f5f5f0; color: #666; }
+.pill-lose { background: #ffebee; color: #c62828; }
+.banner { padding: 10px 14px; border-radius: 8px; font-size: 13px; margin-top: 12px; display: none; }
+.banner.success { background: #e8f5e9; color: #2e7d32; display: block; }
+.hint { font-size: 12px; color: #999; margin-top: 8px; line-height: 1.6; }
+.empty { padding: 3rem; text-align: center; color: #bbb; font-size: 14px; }
+.loading { padding: 2rem; text-align: center; color: #888; font-size: 14px; }
+.filter-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; }
+.filter-row label { font-size: 12px; color: #888; }
+.col-id { width: 95px; }
+.col-name { width: 130px; }
+.col-table { }
+.col-tyc { width: 60px; text-align: center; }
+.col-qcc { width: 110px; text-align: center; }
+.col-judge { width: 90px; text-align: center; }
+@media (max-width: 600px) {
+  .input-grid { grid-template-columns: 1fr; }
+  .stats-row { grid-template-columns: repeat(2, 1fr); }
+}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <h1>线索字段匹配工具</h1>
+    <p>输入线索内容，自动匹配涉及的天眼查数据字段，评估与企查查的竞争力</p>
+  </div>
+
+  <div class="card">
+    <div class="input-grid">
+      <div>
+        <div class="section-label">日期</div>
+        <input type="date" id="input-date" />
+      </div>
+      <div>
+        <div class="section-label">涉及公司</div>
+        <input type="text" id="input-company" placeholder="如 宁德时代" />
+      </div>
+    </div>
+    <div class="section-label">线索内容</div>
+    <textarea id="clue-input" placeholder="粘贴线索原文，例如：&#10;【#宁德时代在泰州成立新科技公司# 注册资本500万】天眼查App显示，近日，时代骐骥新能源科技（泰州）有限公司成立，法定代表人为宋庆龙…"></textarea>
+    <div class="btn-row">
+      <button class="primary" id="match-btn" onclick="runMatch()">匹配字段</button>
+      <button onclick="loadExample()">加载示例</button>
+      <button onclick="clearAll()">清空</button>
+    </div>
+  </div>
+
+  <div id="results-area"></div>
+</div>
+
+<script>
+const FIELD_DB = [
+  {id:"D02422",name:"公司名称",table:"普通企业工商信息表",keywords:["成立","公司","企业","注册","有限公司","科技公司"]},
+  {id:"D02431",name:"成立日期",table:"普通企业工商信息表",keywords:["成立","近日","新成立","设立"]},
+  {id:"D02429",name:"法人名称",table:"普通企业工商信息表",keywords:["法定代表人","法人","负责人"]},
+  {id:"D02433",name:"注册资本",table:"普通企业工商信息表",keywords:["注册资本","注册资本增至","增资至"]},
+  {id:"D02451",name:"经营范围",table:"普通企业工商信息表",keywords:["经营范围","业务范围","从事","包括"]},
+  {id:"D02430",name:"登记状态",table:"普通企业工商信息表",keywords:["注销","吊销","存续","登记状态"]},
+  {id:"D02444",name:"参保人数",table:"普通企业工商信息表",keywords:["参保","社保","参保人数","降至"]},
+  {id:"D02627",name:"股东名称",table:"最新公示股东表",keywords:["股东","全资持股","共同持股","由.*持股","持股"]},
+  {id:"D02631",name:"持股比例",table:"最新公示股东表",keywords:["全资","持股比例","控股","出资比例"]},
+  {id:"D02634",name:"认缴出资额",table:"最新公示股东表",keywords:["认缴","出资额","出资"]},
+  {id:"D02808",name:"持股比例",table:"对外投资表",keywords:["全资持股","旗下","子公司","控股子公司"]},
+  {id:"D02813",name:"被投资公司名称",table:"对外投资表",keywords:["旗下","子公司","新成立","投资设立"]},
+  {id:"D01695",name:"处罚总金额",table:"行政处罚表",keywords:["处罚","罚款","被罚"]},
+  {id:"D01697",name:"处罚名称",table:"行政处罚表",keywords:["行政处罚","违规","被处罚"]},
+  {id:"D01698",name:"处罚事由",table:"行政处罚表",keywords:["违规","违法","不正当竞争"]},
+  {id:"D02112",name:"案号",table:"开庭公告表",keywords:["开庭","庭审","将于","开庭公告"]},
+  {id:"D02113",name:"案由",table:"开庭公告表",keywords:["纠纷","侵权","案由","起诉","被起诉"]},
+  {id:"D02126",name:"法院",table:"开庭公告表",keywords:["法院","互联网法院","人民法院"]},
+  {id:"D02127",name:"开庭时间",table:"开庭公告表",keywords:["将于","开庭","月","日开庭","审理"]},
+  {id:"D05566",name:"案由",table:"裁判文书表",keywords:["传播权","名誉权","肖像权","著作权纠纷","侵害作品"]},
+  {id:"D05550",name:"案号",table:"裁判文书表",keywords:["裁判","判决","裁定","文书"]},
+  {id:"D05704",name:"商标图示",table:"商标信息表",keywords:["商标","申请注册","注册商标"]},
+  {id:"D05727",name:"申请人名称",table:"商标信息表",keywords:["商标申请","申请注册","申请人"]},
+  {id:"D05707",name:"商标状态",table:"商标信息表",keywords:["等待实质审查","商标状态","审查中"]},
+  {id:"D05719",name:"商标类型",table:"商标信息表",keywords:["国际分类","商标类型","类别"]},
+  {id:"D02149",name:"案号",table:"限制消费令表",keywords:["限消","限制消费令","被限消"]},
+  {id:"D02193",name:"失信被执行人",table:"失信被执行人表",keywords:["失信","老赖","被执行人","失信被执行"]},
+  {id:"D02229",name:"执行通知书文号",table:"股权冻结表",keywords:["股权冻结","冻结","被冻结","股权已被冻结"]},
+  {id:"D02217",name:"被执行人名称",table:"被执行人表",keywords:["被执行","强制执行","执行案"]},
+  {id:"D00090",name:"披露日期",table:"融资历程表",keywords:["融资","A轮","B轮","C轮","天使轮","战略融资","Pre"]},
+  {id:"D00091",name:"交易金额",table:"融资历程表",keywords:["融资金额","亿元融资","万元融资"]},
+  {id:"D00097",name:"投资方",table:"融资历程表",keywords:["投资方","投资机构","领投","跟投","资本"]},
+  {id:"D03087",name:"资产总额",table:"财务数据—资产负债率表",keywords:["资产增至","总资产","资产总额","增至"]},
+  {id:"D03391",name:"总市值",table:"A股股价走势表",keywords:["市值","总市值","跃居","A股市值","市值超"]},
+  {id:"D03418",name:"A股代码",table:"A股证券信息表",keywords:["300750","600","000","上市公司","A股","股票代码"]},
+  {id:"D04019",name:"人员简介",table:"人员基础信息表",keywords:["创始人","去世","讣告","法定代表人","CEO","董事长","总裁"]},
+  {id:"D03764",name:"具体职位",table:"商业履历-任职履历表",keywords:["创始人","任职","曾任","高管","总裁"]},
+  {id:"D02349",name:"案号",table:"破产案件表",keywords:["破产","重整","预重整","申请重整"]},
+  {id:"D02350",name:"案件类型",table:"破产案件表",keywords:["破产重整","破产清算","预重整"]},
+  {id:"D00154",name:"私募基金名称",table:"私募基金—基本信息表",keywords:["股权投资基金","私募","合伙企业","有限合伙","出资额"]},
+  {id:"D00030",name:"专利名称",table:"专利信息表",keywords:["专利","发明专利","实用新型","外观设计"]},
+  {id:"D01686",name:"列入日期",table:"严重违法表",keywords:["严重违法","违法失信","被列入黑名单"]},
+  {id:"D01782",name:"列入日期",table:"经营异常表",keywords:["经营异常","异常名录"]},
+  {id:"D06981",name:"产业链节点名称",table:"产业链信息表",keywords:["产业链","上下游","供应链","新能源","半导体","芯片","换电"]},
+  {id:"D00154",name:"私募基金名称",table:"私募基金—基本信息表",keywords:["基金","私募基金","合伙企业","出资额8亿"]},
+  {id:"D03969",name:"企业规模",table:"企业规模表",keywords:["员工","参保人数","规模","人员规模"]},
+  {id:"D01096",name:"标准名称",table:"企业标准信息表",keywords:["标准","认证","行业标准","团体标准"]},
+];
+
+const EXAMPLE = {
+  date: new Date().toISOString().slice(0,10),
+  company: "宁德时代",
+  text: "【#宁德时代在泰州成立新科技公司# 注册资本500万】天眼查App显示，近日，时代骐骥新能源科技（泰州）有限公司成立，法定代表人为宋庆龙，注册资本500万人民币，经营范围包括新能源技术研发、新能源汽车换电设施销售、在线能源计量技术研发等，由宁德时代（300750）旗下时代骐骥新能源科技（苏州）有限公司全资持股。"
+};
+
+let matchedData = [];
+let meta = {date:'', company:'', content:''};
+
+function loadExample() {
+  document.getElementById('input-date').value = EXAMPLE.date;
+  document.getElementById('input-company').value = EXAMPLE.company;
+  document.getElementById('clue-input').value = EXAMPLE.text;
+}
+
+function clearAll() {
+  document.getElementById('input-date').value = '';
+  document.getElementById('input-company').value = '';
+  document.getElementById('clue-input').value = '';
+  document.getElementById('results-area').innerHTML = '';
+  matchedData = [];
+}
+
+function matchFields(text) {
+  const seen = new Set();
+  const results = [];
+  for (const f of FIELD_DB) {
+    const key = f.id + '|' + f.table;
+    if (seen.has(key)) continue;
+    if (f.keywords.some(kw => text.includes(kw))) {
+      seen.add(key);
+      results.push({...f, qcc:'', judge:''});
+    }
+  }
+  return results;
+}
+
+function runMatch() {
+  const text = document.getElementById('clue-input').value.trim();
+  if (!text) { alert('请先输入线索内容'); return; }
+  meta.date = document.getElementById('input-date').value;
+  meta.company = document.getElementById('input-company').value;
+  meta.content = text;
+
+  const btn = document.getElementById('match-btn');
+  btn.disabled = true; btn.textContent = '匹配中…';
+  document.getElementById('results-area').innerHTML = '<div class="card loading">正在分析线索，匹配字段中…</div>';
+
+  setTimeout(() => {
+    matchedData = matchFields(text);
+    renderResults();
+    btn.disabled = false; btn.textContent = '匹配字段';
+  }, 500);
+}
+
+function renderResults() {
+  const area = document.getElementById('results-area');
+  if (!matchedData.length) {
+    area.innerHTML = '<div class="card empty">未匹配到相关字段，请检查线索内容</div>';
+    return;
+  }
+
+  const tables = [...new Set(matchedData.map(d => d.table))];
+
+  let html = '<div class="card">';
+  html += '<div class="stats-row">';
+  html += `<div class="stat-card"><div class="num">${matchedData.length}</div><div class="lbl">匹配字段数</div></div>`;
+  html += `<div class="stat-card"><div class="num">${tables.length}</div><div class="lbl">涉及数据表</div></div>`;
+  html += `<div class="stat-card"><div class="num" id="win-num">0</div><div class="lbl">TYC优</div></div>`;
+  html += `<div class="stat-card"><div class="num" id="pending-num">${matchedData.length}</div><div class="lbl">待评估</div></div>`;
+  html += '</div>';
+
+  html += '<div class="filter-row">';
+  html += '<label>筛选数据表：</label>';
+  html += '<select id="table-filter" onchange="filterTable()">';
+  html += '<option value="">全部</option>';
+  tables.forEach(t => { html += `<option value="${t}">${t}</option>`; });
+  html += '</select>';
+  html += '</div>';
+
+  html += '<div class="table-wrap"><table>';
+  html += '<colgroup><col class="col-id"><col class="col-name"><col class="col-table"><col class="col-tyc"><col class="col-qcc"><col class="col-judge"></colgroup>';
+  html += '<thead><tr><th>字段ID</th><th>设计字段名称</th><th>所属数据表</th><th style="text-align:center">天眼查</th><th style="text-align:center">企查查</th><th style="text-align:center">竞争力</th></tr></thead>';
+  html += '<tbody id="result-tbody">';
+
+  matchedData.forEach((row, i) => {
+    html += `<tr data-table="${row.table}">`;
+    html += `<td style="font-family:monospace;font-size:11px;color:#999;">${row.id}</td>`;
+    html += `<td style="font-weight:500;">${row.name}</td>`;
+    html += `<td style="font-size:12px;color:#888;">${row.table}</td>`;
+    html += `<td style="text-align:center;">✅</td>`;
+    html += `<td style="text-align:center;"><select onchange="updateRow(${i},this.value)"><option value="">待评估</option><option value="有">✅ 有</option><option value="无">❌ 无</option></select></td>`;
+    html += `<td style="text-align:center;" id="j-${i}"><span style="color:#ccc;">—</span></td>`;
+    html += '</tr>';
+  });
+
+  html += '</tbody></table></div>';
+
+  html += '<div class="btn-row" style="margin-top:16px;">';
+  html += '<button class="primary" onclick="copyToFeishu()">复制到飞书</button>';
+  html += '</div>';
+  html += '<div class="hint">复制后在飞书多维表格选中第一个空行，直接 Ctrl+V 粘贴。列顺序：日期 / 内容 / 涉及公司 / 字段ID / 所属数据表 / 设计字段名称 / 天眼查 / 企查查 / 竞争力</div>';
+  html += '<div class="banner" id="copy-banner">已复制！请在飞书多维表格中粘贴（Ctrl+V）</div>';
+  html += '</div>';
+
+  area.innerHTML = html;
+}
+
+function updateRow(i, val) {
+  let judge = '', html = '';
+  if (val === '有') { judge = '平'; html = '<span class="pill pill-tie">平</span>'; }
+  else if (val === '无') { judge = 'TYC优'; html = '<span class="pill pill-win">TYC优</span>'; }
+  else { html = '<span style="color:#ccc;">—</span>'; }
+  matchedData[i].qcc = val;
+  matchedData[i].judge = judge;
+  document.getElementById(`j-${i}`).innerHTML = html;
+
+  const wins = matchedData.filter(d => d.judge === 'TYC优').length;
+  const pending = matchedData.filter(d => !d.qcc).length;
+  document.getElementById('win-num').textContent = wins;
+  document.getElementById('pending-num').textContent = pending;
+}
+
+function filterTable() {
+  const val = document.getElementById('table-filter').value;
+  document.querySelectorAll('#result-tbody tr').forEach(row => {
+    row.style.display = (!val || row.dataset.table === val) ? '' : 'none';
+  });
+}
+
+function copyToFeishu() {
+  const rows = matchedData.map(d => [
+    meta.date,
+    meta.content.replace(/\n/g,' '),
+    meta.company,
+    d.id,
+    d.table,
+    d.name,
+    '有',
+    d.qcc || '待评估',
+    d.judge || '待评估'
+  ].join('\t')).join('\n');
+
+  navigator.clipboard.writeText(rows).then(() => {
+    const b = document.getElementById('copy-banner');
+    b.classList.add('success');
+    setTimeout(() => b.classList.remove('success'), 3000);
+  }).catch(() => alert('复制失败，请检查浏览器权限'));
+}
+</script>
+</body>
+</html>
