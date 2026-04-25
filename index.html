@@ -87,131 +87,201 @@ select { padding: 4px 6px; font-size: 12px; border: 0.5px solid #ddd; border-rad
 </div>
 <script>
 const FIELD_DB = [
-  // ── 工商基础（关键词必须是线索里的专有表述）──
-  {id:"D02422", name:"公司名称", table:"普通企业工商信息表", type:"company",
-   kw:["有限公司成立","股份公司成立","新公司成立","科技（","传媒有限","工作室等"]},
-  {id:"D02431", name:"成立日期", table:"普通企业工商信息表", type:"company",
-   kw:["成立于20","近日，.*公司成立","成立，法定代表人"]},
+  // ══ 工商基础 ══
+  {id:"D02421", name:"企业类型", table:"普通企业工商信息表", type:"company",
+   kw:["有限责任公司","股份有限公司","合伙企业","企业类型"]},
   {id:"D02429", name:"法人名称", table:"普通企业工商信息表", type:"company",
-   kw:["法定代表人为","法定代表人是"]},
+   kw:["法定代表人为","法定代表人是","法人变更","更换法定代表人","卸任.*法定代表人","接手.*法定代表人"]},
+  {id:"D02430", name:"登记状态", table:"普通企业工商信息表", type:"company",
+   kw:["已注销","被吊销","存续状态","登记状态","注销.*状态"]},
+  {id:"D02431", name:"成立日期", table:"普通企业工商信息表", type:"company",
+   kw:["成立于20","近日，.*公司成立","成立，法定代表人","成立不足","登记成立"]},
   {id:"D02433", name:"注册资本", table:"普通企业工商信息表", type:"company",
-   kw:["注册资本","注册资本增至","注册资本由.*增至","增幅约"]},
+   kw:["注册资本","增资至","增资到","注册资本由.*增至","减资至","注册资本.*亿","注册资本.*万","增资.*亿","增幅"]},
   {id:"D02434", name:"实缴资本", table:"普通企业工商信息表", type:"company",
    kw:["实缴资本","实缴出资"]},
-  {id:"D02451", name:"经营范围", table:"普通企业工商信息表", type:"company",
-   kw:["经营范围包括","经营范围含","业务范围包括"]},
-  {id:"D02430", name:"登记状态", table:"普通企业工商信息表", type:"company",
-   kw:["处于存续状态","存续状态","已注销","被吊销","登记状态"]},
   {id:"D02444", name:"参保人数", table:"普通企业工商信息表", type:"company",
-   kw:["参保人数从","参保人数降至","降至0人","参保人数由"]},
+   kw:["参保人数","0人参保","降至0人","参保人数由","参保人数降至"]},
+  {id:"D02451", name:"经营范围", table:"普通企业工商信息表", type:"company",
+   kw:["经营范围包括","经营范围含","业务范围包括","经营范围新增"]},
 
-  // ── 股东/投资 ──
+  // ══ 变更记录 ══
+  {id:"D58960", name:"变更项目", table:"变更记录表", type:"company",
+   kw:["发生工商变更","完成更名","完成工商变更","变更.*法定代表人","变更.*高管","变更.*董事长","更名为","名称变更","高管变更"]},
+  {id:"D58940", name:"变更日期", table:"变更记录表", type:"company",
+   kw:["变更日期","近日.*变更","工商变更"]},
+
+  // ══ 股东/持股 ══
   {id:"D02627", name:"股东名称", table:"最新公示股东表", type:"company",
-   kw:["共同持股","全资持股","股东信息显示","由.*共同出资"]},
+   kw:["共同持股","全资持股","股东信息显示","由.*共同出资","由.*共同持股","入股","新增.*股东","股东变更","退股"]},
   {id:"D02631", name:"持股比例", table:"最新公示股东表", type:"company",
-   kw:["全资持股","持股比例","由.*全资"]},
-  {id:"D02808", name:"持股比例", table:"对外投资表", type:"company",
-   kw:["旗下.*全资持股","旗下.*有限公司","控股子公司","旗下超.*家"]},
+   kw:["持股比例","全资持股","由.*全资","持股.*%"]},
+  {id:"D02634", name:"认缴出资额", table:"最新公示股东表", type:"company",
+   kw:["认缴出资","出资额.*亿","出资额.*万","出资.*亿人民币"]},
+
+  // ══ 对外投资 ══
   {id:"D02813", name:"被投资公司名称", table:"对外投资表", type:"company",
-   kw:["旗下.*公司","子公司","实际控制.*家企业","今年一季度.*成立"]},
+   kw:["旗下.*公司","子公司","控股子公司","旗下超.*家","对外投资"]},
   {id:"D04653", name:"控制企业名称", table:"控制企业表", type:"company",
-   kw:["实际控制数百家","实际控制.*家企业","控制企业"]},
+   kw:["实际控制.*家企业","控制企业","实际控制数百家"]},
+  {id:"D04619", name:"明确计算实际控制人名称", table:"实际控制人表", type:"company",
+   kw:["实际控制人","实控人"]},
+  {id:"D02892", name:"最终受益人名称", table:"最终受益人表", type:"company",
+   kw:["最终受益人","最终受益股份"]},
 
-  // ── 工商变更 ──
-  {id:"D02795", name:"注册资本变更值", table:"股权变更历程表", type:"company",
-   kw:["注册资本由.*人民币增至","增至.*人民币，增幅","发生工商变更，注册资本"]},
+  // ══ 主要人员 ══
+  {id:"D06203", name:"主要人员列表", table:"最新公示主要人员表", type:"company",
+   kw:["主要人员","卸任.*职务","退出.*职务","新任.*职务","换帅","接任.*董事长","接任.*总裁"]},
+  {id:"D05902", name:"人员姓名", table:"最新公示主要人员表", type:"company",
+   kw:["卸任","接手","任职","担任.*董事长","担任.*总经理","担任.*CEO"]},
 
-  // ── 人物维度 ──
+  // ══ 人物维度 ══
   {id:"D06169", name:"所有关联企业列表", table:"人员所有关联企业信息表", type:"person",
-   kw:["名下关联.*家企业","名下.*家公司","关联.*家企业","旗下关联"]},
+   kw:["名下关联.*家企业","名下.*家公司","关联.*家企业","旗下关联","名下.*存续"]},
   {id:"D06170", name:"担任高管企业列表", table:"人员担任高管企业信息表", type:"person",
-   kw:["担任执行董事","担任董事","担任经理","担任.*职务","在上述企业担任"]},
+   kw:["担任执行董事","担任董事","担任经理","担任.*职务","在上述企业担任","担任高管"]},
   {id:"D06171", name:"担任股东企业列表", table:"人员担任股东企业信息表", type:"person",
    kw:["名下.*股东","持股.*企业","担任股东"]},
   {id:"D06172", name:"所有曾关联企业列表", table:"人员所有曾关联企业信息表", type:"person",
-   kw:["曾关联","历史关联企业","名下关联.*注销"]},
+   kw:["曾关联","历史关联企业","名下关联.*注销","已注销.*工作室"]},
   {id:"D04019", name:"人员简介", table:"人员基础信息表", type:"person",
-   kw:["去世","讣告","创始人.*疑似","艺名","真名","本名","（.*）名下关联"]},
+   kw:["去世","讣告","艺名","真名","本名","（.*）名下关联","人员简介"]},
   {id:"D03764", name:"具体职位", table:"商业履历-任职履历表", type:"person",
-   kw:["担任执行董事","担任法定代表人","担任.*负责人","在上述企业担任"]},
+   kw:["担任执行董事","担任法定代表人","担任.*负责人","在上述企业担任","卸任"]},
 
-  // ── 关系图谱 ──
+  // ══ 关系图谱 ══
   {id:"D02088", name:"关系类型", table:"涉诉关系表", type:"person",
    kw:["无直接商业关联","无商业关联","查关系信息显示","关系信息显示.*无"]},
   {id:"D05790", name:"疑似关系类型", table:"疑似关系表", type:"person",
    kw:["疑似关联","间接关联","疑似存在关联"]},
 
-  // ── 社交媒体 ──
+  // ══ 社交媒体 ══
   {id:"D90397", name:"抖音名称", table:"抖音账号表", type:"person",
-   kw:["短视频账号","抖音.*粉丝","粉丝数为","近一周涨粉","涨粉.*万"]},
+   kw:["抖音.*粉丝","粉丝数为","近一周涨粉","涨粉.*万","抖音账号"]},
   {id:"D90392", name:"微博名称", table:"微博账号表", type:"person",
    kw:["微博.*粉丝","微博账号","微博.*关注"]},
   {id:"D05485", name:"微信号名称", table:"微信公众号表", type:"person",
    kw:["公众号","微信公众号"]},
 
-  // ── 法律诉讼（精准匹配）──
+  // ══ 法律诉讼 ══
   {id:"D02112", name:"案号", table:"开庭公告表", type:"legal",
-   kw:["新增一则开庭公告","开庭公告","将于.*法院开庭","开庭审理"]},
+   kw:["新增.*开庭公告","开庭公告","将于.*法院开庭","开庭审理","开庭"]},
   {id:"D02113", name:"案由", table:"开庭公告表", type:"legal",
    kw:["案由为.*纠纷","侵害.*权纠纷","名誉权纠纷","肖像权纠纷","案由为"]},
-  {id:"D02126", name:"法院", table:"开庭公告表", type:"legal",
-   kw:["互联网法院","人民法院开庭","法院开庭"]},
-  {id:"D05566", name:"案由", table:"裁判文书表", type:"legal",
-   kw:["侵害作品信息网络传播权","著作权纠纷","裁判文书"]},
+  {id:"D02137", name:"案号", table:"法院公告表", type:"legal",
+   kw:["法院公告","新增一则法院公告","法院向.*公告送达","公告送达","维权索赔"]},
   {id:"D02149", name:"案号", table:"限制消费令表", type:"legal",
-   kw:["限制消费令","现存一则限制消费","被限消","限消令"]},
+   kw:["限制消费令","现存一则限制消费","被限消","限消令","被限制消费"]},
   {id:"D02193", name:"失信被执行人", table:"失信被执行人表", type:"legal",
-   kw:["失信被执行人","老赖信息","失信.*执行"]},
-  {id:"D02229", name:"执行通知书文号", table:"股权冻结表", type:"legal",
-   kw:["股权.*已被冻结","多家公司股权.*冻结","股权冻结"]},
+   kw:["失信被执行人","老赖信息","失信.*执行","被列为老赖"]},
   {id:"D02217", name:"被执行人名称", table:"被执行人表", type:"legal",
-   kw:["被执行","终本案件","执行标的"]},
+   kw:["被执行","被执行人","执行标的","被法院执行","被强制执行","被恢复执行"]},
+  {id:"D02178", name:"案号", table:"终本案件表", type:"legal",
+   kw:["终本案件","终本"]},
+  {id:"D02229", name:"执行通知书文号", table:"股权冻结表", type:"legal",
+   kw:["股权.*已被冻结","股权冻结","被冻结.*股权","股权被全部冻结","被冻结.*亿股权"]},
   {id:"D02349", name:"案号", table:"破产案件表", type:"legal",
-   kw:["申请重整及预重整","被债权人申请重整","破产重整","破产清算"]},
-  {id:"D01695", name:"处罚总金额", table:"行政处罚表", type:"legal",
-   kw:["行政处罚","被处罚.*万元","处以罚款"]},
-  {id:"D01782", name:"列入日期", table:"经营异常表", type:"legal",
-   kw:["列入经营异常","经营异常名录"]},
+   kw:["申请重整","被债权人申请重整","破产重整","破产清算","被申请破产"]},
+  {id:"D01697", name:"处罚名称", table:"行政处罚表", type:"legal",
+   kw:["行政处罚","被处罚.*万元","处以罚款","被罚款","被罚没","被处以","罚款.*万"]},
+  {id:"D01783", name:"列入经营异常名录原因", table:"经营异常表", type:"legal",
+   kw:["列入经营异常","经营异常名录","经营异常"]},
   {id:"D01686", name:"列入日期", table:"严重违法表", type:"legal",
    kw:["严重违法失信","列入严重违法"]},
+  {id:"D01756", name:"累计新发生欠税总金额", table:"欠税公告表", type:"legal",
+   kw:["欠税","欠税公告","因欠税被公告"]},
+  {id:"D01752", name:"案件信息-主要违法事实", table:"税收违法表", type:"legal",
+   kw:["税收违法","税务违法","逃税","偷税漏税"]},
+  {id:"D02301", name:"案号", table:"送达公告表", type:"legal",
+   kw:["送达公告","公告送达"]},
+  {id:"D05550", name:"案号", table:"裁判文书表", type:"legal",
+   kw:["裁判文书","侵害作品信息网络传播权","著作权纠纷裁判","判决书","裁定书"]},
+  {id:"D02405", name:"拍卖标的", table:"司法拍卖表", type:"legal",
+   kw:["司法拍卖","法拍","拍卖标的"]},
 
-  // ── 商标知识产权 ──
-  {id:"D05704", name:"商标图示", table:"商标信息表", type:"company",
-   kw:["申请注册.*商标","申请注册\"","商标.*当前商标状态"]},
+  // ══ 注销/简易注销 ══
+  {id:"D01651", name:"注销原因", table:"注销备案表", type:"company",
+   kw:["注销备案","拟注销","申请注销","注销登记"]},
+  {id:"D01674", name:"简易注销结果", table:"简易注销表", type:"company",
+   kw:["简易注销","简易注销公告","拟简易注销"]},
+
+  // ══ 商标知识产权 ══
+  {id:"D05704", name:"商标图示URL", table:"商标信息表", type:"company",
+   kw:["申请注册.*商标","申请.*商标","商标.*当前商标状态","注册.*商标","商标信息","抢注.*商标","转让.*商标"]},
   {id:"D05707", name:"商标状态", table:"商标信息表", type:"company",
-   kw:["等待实质审查","当前商标状态为","商标状态为"]},
-  {id:"D05719", name:"商标类型", table:"商标信息表", type:"company",
-   kw:["国际分类为","商标，国际分类"]},
+   kw:["等待实质审查","当前商标状态为","商标状态为","商标状态"]},
   {id:"D00030", name:"专利名称", table:"专利信息表", type:"company",
-   kw:["发明专利","实用新型专利","外观设计专利","专利申请"]},
+   kw:["发明专利","实用新型专利","外观设计专利","专利申请","专利获授权","公布.*专利","专利信息"]},
+  {id:"D00063", name:"软件全称", table:"软件著作权表", type:"company",
+   kw:["软件著作权","软著","登记.*软件著作权"]},
+  {id:"D06786", name:"作品名称", table:"作品著作权表", type:"company",
+   kw:["作品著作权","著作权","登记.*作品著作权","作品著作","登记.*著作权"]},
+  {id:"D00750", name:"许可证名称", table:"行政许可", type:"company",
+   kw:["行政许可","营业性演出许可","经营许可证","新增.*许可","获得.*许可"]},
 
-  // ── 融资（精准匹配）──
+  // ══ 融资 ══
   {id:"D00090", name:"披露日期", table:"融资历程表", type:"finance",
-   kw:["完成.*融资","获得.*融资","宣布完成","完成.*轮融资"]},
+   kw:["完成.*融资","获得.*融资","宣布完成","完成.*轮融资","新一轮融资"]},
   {id:"D00091", name:"交易金额", table:"融资历程表", type:"finance",
-   kw:["融资.*亿元","融资.*万元","估值.*亿","募资.*亿"]},
+   kw:["融资.*亿元","融资.*万元","估值.*亿","募资.*亿","融资金额"]},
   {id:"D00092", name:"融资轮次", table:"融资历程表", type:"finance",
-   kw:["A轮","B轮","C轮","天使轮","Pre-A","战略融资","种子轮"]},
+   kw:["A轮","B轮","C轮","天使轮","Pre-A","战略融资","种子轮","Pre-B"]},
   {id:"D00097", name:"投资方", table:"融资历程表", type:"finance",
-   kw:["领投","跟投","投资机构","资本参与投资"]},
+   kw:["领投","跟投","投资机构","资本参与投资","参与本轮"]},
 
-  // ── 财务/市值 ──
-  {id:"D03087", name:"资产总额", table:"财务数据—资产负债率表", type:"finance",
-   kw:["注册资本由.*增至.*增幅","总资产增至","资产总额增"]},
-  {id:"D03391", name:"总市值", table:"A股股价走势表", type:"finance",
-   kw:["总市值超","市值跃居","A股总市值"]},
+  // ══ A股/上市 ══
+  {id:"D03462", name:"标题", table:"A股上市公告表", type:"finance",
+   kw:["上市公告","上交所公告","深交所公告","发布公告"]},
   {id:"D03418", name:"A股代码", table:"A股证券信息表", type:"finance",
-   kw:["（300","（600","（000","A股总市值","上市公司（"]},
+   kw:["（300","（600","（000","A股总市值","上市公司（","A股上市"]},
+  {id:"D03391", name:"总市值", table:"A股股价走势表", type:"finance",
+   kw:["总市值超","市值跃居","A股总市值","市值.*亿"]},
 
-  // ── 私募基金（精准）──
+  // ══ 私募基金 ══
   {id:"D00154", name:"私募基金名称", table:"私募基金—基本信息表", type:"finance",
-   kw:["股权投资合伙企业","私募基金从事股权投资","出资额.*亿.*私募"]},
+   kw:["股权投资合伙企业","私募股权投资基金合伙企业","创业投资基金合伙企业","私募.*基金.*成立","登记成立"]},
   {id:"D00228", name:"私募基金管理人名称", table:"私募基金管理人—基本信息表", type:"finance",
-   kw:["执行事务合伙人为","基金管理人","私募基金管理"]},
+   kw:["执行事务合伙人为","基金管理人为","私募基金管理人"]},
 
-  // ── 产业链 ──
+  // ══ 年报/经营 ══
+  {id:"D05822", name:"发布日期/报告年份", table:"企业年报表", type:"company",
+   kw:["年报信息","年度报告","年报.*显示"]},
+  {id:"D01024", name:"纳税人资格类型", table:"纳税人资质", type:"company",
+   kw:["一般纳税人","小规模纳税人","纳税人类型","纳税人资质"]},
+  {id:"D03116", name:"税前利润", table:"财务数据—利润表", type:"finance",
+   kw:["利润总额","净利润","营业收入.*财务","财务数据"]},
+
+  // ══ 联系信息 ══
+  {id:"D04661", name:"联系电话", table:"联系信息表", type:"company",
+   kw:["联系电话","客服电话"]},
+  {id:"D06852", name:"网站名称", table:"网络服务备案-网站备案表", type:"company",
+   kw:["网站备案","ICP备案","备案号"]},
+
+  // ══ 企业动态 ══
+  {id:"D05349", name:"动态类型", table:"企业/人物动态表", type:"company",
+   kw:["情报动态","企业动态","天眼查情报"]},
+
+  // ══ 招投标 ══
+  {id:"D00625", name:"公告标题", table:"招投标表", type:"company",
+   kw:["中标","招标公告","投标","招投标","中标金额"]},
+
+  // ══ 抽查检查 ══
+  {id:"D00784", name:"抽查检查结果", table:"抽查检查-市场监管", type:"legal",
+   kw:["抽查检查","被抽查","市场监管.*检查","监督检查"]},
+  {id:"D00791", name:"抽查计划编号", table:"双随机抽查", type:"legal",
+   kw:["双随机抽查","双随机"]},
+
+  // ══ 股权穿透 ══
+  {id:"D02689", name:"股东名称", table:"股权穿透表", type:"company",
+   kw:["股权全景","股权穿透图","穿透.*股东"]},
+
+  // ══ 产业链 ══
   {id:"D06981", name:"产业链节点名称", table:"产业链信息表", type:"company",
-   kw:["机器人产业","新能源汽车换电","半导体投资","芯片产业"]},
+   kw:["机器人产业","新能源汽车换电","半导体投资","芯片产业","产业链"]},
+
+  // ══ 企业名称 ══
+  {id:"D02422", name:"企业名称", table:"普通企业工商信息表", type:"company",
+   kw:["完成更名","更名为","名称由.*变更","企业名称变更"]},
 ];
 
 const EXAMPLES = {
@@ -313,36 +383,51 @@ function renderResults() {
   tables.forEach(t => { html += `<option value="${t}">${t}</option>`; });
   html += '</select></div>';
   html += '<div class="table-wrap"><table>';
-  html += '<colgroup><col style="width:95px"><col style="width:150px"><col><col style="width:55px"><col style="width:110px"><col style="width:90px"></colgroup>';
-  html += '<thead><tr><th>字段ID</th><th>设计字段名称</th><th>所属数据表</th><th style="text-align:center">天眼查</th><th style="text-align:center">企查查</th><th style="text-align:center">竞争力</th></tr></thead>';
+  html += '<colgroup><col style="width:130px"><col style="width:90px"><col><col style="width:150px"><col style="width:95px"><col style="width:95px"><col style="width:85px"></colgroup>';
+  html += '<thead><tr><th>涉及公司</th><th>字段ID</th><th>所属数据表</th><th>文档字段名称</th><th style="text-align:center">天眼查</th><th style="text-align:center">企查查</th><th style="text-align:center">竞争力</th></tr></thead>';
   html += '<tbody id="result-tbody">';
   matchedData.forEach((row, i) => {
     html += `<tr data-table="${row.table}">`;
+    html += `<td style="font-size:12px;color:#555;">${meta.company||'—'}</td>`;
     html += `<td style="font-family:monospace;font-size:11px;color:#aaa;">${row.id}</td>`;
-    html += `<td style="font-weight:500;">${row.name}</td>`;
     html += `<td style="font-size:12px;color:#888;">${row.table}</td>`;
-    html += `<td style="text-align:center;">✅</td>`;
-    html += `<td style="text-align:center;"><select onchange="updateRow(${i},this.value)"><option value="">待评估</option><option value="有">✅ 有</option><option value="无">❌ 无</option></select></td>`;
+    html += `<td style="font-weight:500;">${row.name}</td>`;
+    html += `<td style="text-align:center;"><select onchange="updateTyc(${i},this.value)"><option value="">待评估</option><option value="有">✅ 有</option><option value="无">❌ 无</option></select></td>`;
+    html += `<td style="text-align:center;"><select onchange="updateQcc(${i},this.value)"><option value="">待评估</option><option value="有">✅ 有</option><option value="无">❌ 无</option></select></td>`;
     html += `<td style="text-align:center;" id="j-${i}"><span style="color:#ddd;">—</span></td>`;
     html += '</tr>';
   });
   html += '</tbody></table></div>';
   html += '<div class="btn-row" style="margin-top:16px;"><button class="primary" onclick="copyToFeishu()">复制到飞书</button></div>';
-  html += '<div class="hint">复制后在飞书多维表格选中第一个空行，直接 Ctrl+V 粘贴。列顺序：日期 / 内容 / 涉及公司 / 字段ID / 所属数据表 / 设计字段名称 / 天眼查 / 企查查 / 竞争力</div>';
+  html += '<div class="hint">复制后在飞书多维表格选中第一个空行，直接 Ctrl+V 粘贴。列顺序：涉及公司 / 字段ID / 所属数据表 / 文档字段名称 / 天眼查 / 企查查 / 竞争力</div>';
   html += '<div class="banner" id="copy-banner">已复制！请在飞书多维表格中粘贴（Ctrl+V）</div>';
   html += '</div>';
   area.innerHTML = html;
 }
 
-function updateRow(i, val) {
+function updateTyc(i, val) {
+  matchedData[i].tyc = val;
+  calcJudge(i);
+}
+
+function updateQcc(i, val) {
+  matchedData[i].qcc = val;
+  calcJudge(i);
+}
+
+function calcJudge(i) {
+  const tyc = matchedData[i].tyc || '';
+  const qcc = matchedData[i].qcc || '';
   let judge = '', html = '';
-  if (val === '有') { judge = '平'; html = '<span class="pill pill-tie">平</span>'; }
-  else if (val === '无') { judge = 'TYC优'; html = '<span class="pill pill-win">TYC优</span>'; }
+  if (tyc === '有' && qcc === '无') { judge = 'TYC优'; html = '<span class="pill pill-win">TYC优</span>'; }
+  else if (tyc === '有' && qcc === '有') { judge = '平'; html = '<span class="pill pill-tie">平</span>'; }
+  else if (tyc === '无' && qcc === '有') { judge = 'QCC优'; html = '<span class="pill pill-lose">QCC优</span>'; }
+  else if (tyc === '无' && qcc === '无') { judge = '均无'; html = '<span style="color:#bbb;font-size:11px;">均无</span>'; }
   else { html = '<span style="color:#ddd;">—</span>'; }
-  matchedData[i].qcc = val; matchedData[i].judge = judge;
+  matchedData[i].judge = judge;
   document.getElementById('j-'+i).innerHTML = html;
   document.getElementById('win-num').textContent = matchedData.filter(d=>d.judge==='TYC优').length;
-  document.getElementById('pending-num').textContent = matchedData.filter(d=>!d.qcc).length;
+  document.getElementById('pending-num').textContent = matchedData.filter(d=>!d.tyc||!d.qcc).length;
 }
 
 function filterTable() {
@@ -354,8 +439,8 @@ function filterTable() {
 
 function copyToFeishu() {
   const rows = matchedData.map(d => [
-    meta.date, meta.content.replace(/\n/g,' '), meta.company,
-    d.id, d.table, d.name, '有', d.qcc||'待评估', d.judge||'待评估'
+    meta.company, d.id, d.table, d.name,
+    d.tyc||'待评估', d.qcc||'待评估', d.judge||'待评估'
   ].join('\t')).join('\n');
   navigator.clipboard.writeText(rows).then(() => {
     const b = document.getElementById('copy-banner');
